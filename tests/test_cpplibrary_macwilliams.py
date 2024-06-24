@@ -1,7 +1,7 @@
 import unittest
 
-import numpy as np
-
+# import numpy as np
+from numpy import array, testing
 import oapackage
 
 
@@ -14,7 +14,7 @@ class TestMacWilliams(unittest.TestCase):
         arrayclass = oapackage.arraylink2arraydata(array)
 
         Dm = oapackage.distance_distribution_mixed(array, 0)
-        D = np.array(Dm)
+        D = array(Dm)
 
         N = array.n_rows
         s = 2
@@ -23,8 +23,8 @@ class TestMacWilliams(unittest.TestCase):
         Bp = oapackage.macwilliams_transform(D, N, s)
         Bpm = oapackage.macwilliams_transform_mixed(Dm, N, factor_levels_for_groups, verbose=0)
 
-        np.testing.assert_array_equal(Bp, [1, 0, 0, .25])
-        np.testing.assert_array_equal(Bp, Bpm)
+        testing.assert_array_equal(Bp, [1, 0, 0, .25])
+        testing.assert_array_equal(Bp, Bpm)
 
         oapackage.GWLP(array)
         oapackage.GWLPmixed(array, verbose=2)

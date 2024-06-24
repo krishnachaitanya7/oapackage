@@ -1,6 +1,7 @@
 import unittest
 
-import numpy as np
+# import numpy as np
+from numpy import all
 from numpy.random import MT19937, RandomState, SeedSequence
 
 import oapackage
@@ -39,8 +40,8 @@ class TestGWLP(unittest.TestCase):
                 colors2 = [colors[idx] for idx in perm]
                 graph2_reduced, colors2_reduced, tr2 = reduce(graph2, colors2)
 
-                self.assertTrue(np.all(graph_reduced == graph2_reduced))
-                self.assertTrue(np.all(colors_reduced == colors2_reduced))
+                self.assertTrue(all(graph_reduced == graph2_reduced))
+                self.assertTrue(all(colors_reduced == colors2_reduced))
 
 
 if __name__ == '__main__':

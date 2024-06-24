@@ -7,7 +7,7 @@ import unittest
 import unittest.mock as mock
 
 import numpy as np
-
+from numpy import random, array, arange
 import oalib
 import oapackage
 import oapackage.Doptim
@@ -17,8 +17,8 @@ import oapackage.scanf
 class TestDoptimize(unittest.TestCase):
     def setUp(self):
         self.arrayclass = oapackage.arraydata_t(2, 16, 0, 6)
-        self.dds = np.random.rand(20, 3)
-        self.dds2 = np.array([[1, 1, 1], [1, 2, 1], [1, 2, 3], [2, 0, 1]])
+        self.dds = random.rand(20, 3)
+        self.dds2 = array([[1, 1, 1], [1, 2, 1], [1, 2, 3], [2, 0, 1]])
 
         self.guitest = True
 
@@ -127,7 +127,7 @@ class TestDoptimize(unittest.TestCase):
     def test_generateDpage(self):
         outputdir = tempfile.mkdtemp()
         allarrays = [oapackage.exampleArray(2, 0), oapackage.exampleArray(2, 0)]
-        dds = np.array([A.Defficiencies() for A in allarrays])
+        dds = array([A.Defficiencies() for A in allarrays])
         arrayclass = oapackage.arraylink2arraydata(allarrays[0])
 
         with mock.patch("sys.stdout", new_callable=io.StringIO):
@@ -150,13 +150,13 @@ class TestDoptimize(unittest.TestCase):
 
     def test_filterPareto(self):
         dds = self.dds2
-        scores = np.arange(dds.shape[0])
+        scores = arange(dds.shape[0])
         sols = [None] * scores.size
         s, _, _ = oapackage.Doptim.filterPareto(scores, dds, sols, verbose=0)
         self.assertEqual(list(s), [2, 3])
 
     def test_calcScore(self):
-        dds = np.random.rand(10, 3)
+        dds = random.rand(10, 3)
         scores = oapackage.Doptim.calcScore(dds, optimfunc=[1, 2, 3])
         self.assertEqual(scores.shape, (dds.shape[0],))
 

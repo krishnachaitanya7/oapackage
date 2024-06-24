@@ -9,8 +9,8 @@ import unittest
 import unittest.mock as mock
 from unittest.mock import patch
 
-import numpy as np
-
+# import numpy as np
+from numpy import ndarray, zeros, array, eye, testing, int64
 import oalib
 import oapackage
 import oapackage.graphtools
@@ -33,7 +33,7 @@ def autodoctest():
 class TestMisc(unittest.TestCase):
 
     def test_reduceGraphNauty(self):
-        G = np.zeros((5, 5), dtype=int)
+        G = zeros((5, 5), dtype=int)
         G[1, 0] = G[0, 1] = 1
         v = oapackage.reduceGraphNauty(G)
         self.assertTrue(len(v) == G.shape[0])
@@ -43,9 +43,9 @@ class TestMisc(unittest.TestCase):
         al = oapackage.exampleArray(5, 0)
         self.assertTrue(al.md5() == '3885c883d3bee0c7546511255bb5c3ae')
         al = oapackage.exampleArray(20, 0)
-        self.assertTrue(np.array(al).shape == (24, 3))
+        self.assertTrue(array(al).shape == (24, 3))
         al = oapackage.exampleArray(40, 0)
-        self.assertTrue(np.array(al).shape == (14, 5))
+        self.assertTrue(array(al).shape == (14, 5))
 
     def test_scanf(self):
         r = oapackage.scanf.sscanf('1', '%d')
@@ -68,7 +68,7 @@ def test_extendSingleArray():
 
 
 def test_numpy_interface(verbose=0):
-    A = np.eye(3, 4).astype(int)
+    A = eye(3, 4).astype(int)
     A[0, :] = [10, 20, 30, 50]
     A[2, :] = [-3, -4, -5, -6]
 
@@ -76,7 +76,7 @@ def test_numpy_interface(verbose=0):
         print('makearraylink')
     al = oapackage.makearraylink(A)
 
-    np.testing.assert_array_equal(np.array(al), A)
+    testing.assert_array_equal(array(al), A)
 
     if verbose:
         al.showarray()
@@ -86,16 +86,16 @@ def test_numpy_interface(verbose=0):
     al = oapackage.array_link(A)
     if verbose:
         al.showarray()
-    Ax = np.array(al)
+    Ax = array(al)
     if verbose:
         print(A)
         print(Ax)
 
-    with np.testing.assert_raises(TypeError):
+    with testing.assert_raises(TypeError):
         # not possible right now...
         if verbose:
             print('direct float')
-        A = np.eye(3).astype(float)
+        A = eye(3).astype(float)
         al = oapackage.array_link(A)
         if verbose:
             al.showarray()
@@ -129,7 +129,7 @@ def miscunittest(verbose=1):
     if len(r) != 3:
         raise Exception('extension generation for %s failed' % (arrayclass, ))
 
-    if not isinstance(al.getarray(), np.ndarray):
+    if not isinstance(al.getarray(), ndarray):
         print(
             'oapackage: unittest: error: array interface not working properly')
     else:
@@ -247,7 +247,7 @@ class TestParetoFunctionality:
 
     def test_selectParetoArrays(self):
 
-        arrays = [oapackage.array_link(np.array([[ii]])) for ii in range(5)]
+        arrays = [oapackage.array_link(array([[ii]])) for ii in range(5)]
         pareto_object = oapackage.ParetoLongLong()
 
         for ii in range(len(arrays)):
@@ -264,7 +264,7 @@ class TestOAhinterface(unittest.TestCase):
 
     def test_update_array_link(self):
         al = oapackage.exampleArray(1)
-        oapackage.update_array_link(al, np.array([[1, 2, 3], [4, 5, 6]]))
+        oapackage.update_array_link(al, array([[1, 2, 3], [4, 5, 6]]))
         print(al)
         self.assertEqual(al.shape, (2, 3))
         self.assertEqual(list(al), [1, 4, 2, 5, 3, 6])
@@ -278,28 +278,28 @@ class TestOAhelper(unittest.TestCase):
 
     def test_helmert_contrasts(self):
         hc = oapackage.oahelper.helmert_contrasts(2, verbose=0)
-        np.testing.assert_array_almost_equal(hc, np.array([[-1.], [1.]]))
+        testing.assert_array_almost_equal(hc, array([[-1.], [1.]]))
 
         hc = oapackage.oahelper.helmert_contrasts(3, verbose=0)
-        np.testing.assert_array_almost_equal(hc, np.array([[-1.22474487, -0.70710678],
+        testing.assert_array_almost_equal(hc, array([[-1.22474487, -0.70710678],
                                                            [1.22474487, -0.70710678],
                                                            [0., 1.41421356]]))
 
         hc = oapackage.oahelper.helmert_contrasts(10, verbose=0)
-        np.testing.assert_array_almost_equal(hc[0], np.array([-2.23606798, -1.29099445, -0.91287093, -0.70710678, -0.57735027,
+        testing.assert_array_almost_equal(hc[0], array([-2.23606798, -1.29099445, -0.91287093, -0.70710678, -0.57735027,
                                                               -0.48795004, -0.42257713, -0.372678, -0.33333333]))
 
         for num_levels in [4, 10, 12]:
             hc = oapackage.oahelper.helmert_contrasts(num_levels, verbose=0)
-            np.testing.assert_array_almost_equal(hc.T.dot(hc), num_levels * np.eye(num_levels - 1))
+            testing.assert_array_almost_equal(hc.T.dot(hc), num_levels * eye(num_levels - 1))
 
     def test_array2latex(self):
 
-        latex_str = oapackage.oahelper.array2latex(np.array(self.test_array))
+        latex_str = oapackage.oahelper.array2latex(array(self.test_array))
         self.assertEqual(latex_str[0:15], r'\begin{tabular}')
-        latex_str = oapackage.oahelper.array2latex(np.array(self.test_array), mode='psmallmatrix')
+        latex_str = oapackage.oahelper.array2latex(array(self.test_array), mode='psmallmatrix')
         self.assertEqual(latex_str[0:15], r'\begin{psmallma')
-        latex_str = oapackage.oahelper.array2latex(np.array(self.test_array), mode='pmatrix')
+        latex_str = oapackage.oahelper.array2latex(array(self.test_array), mode='pmatrix')
         self.assertEqual(latex_str[0:15], r'\begin{pmatrix}')
 
     def test_gwlp2str(self):
@@ -371,11 +371,11 @@ class TestOAhelper(unittest.TestCase):
         self.assertEqual(s, '3.1')
 
     def test_safemin_safemax(self):
-        r = oapackage.oahelper.safemin(np.array([1, -2, 3]), default=0)
+        r = oapackage.oahelper.safemin(array([1, -2, 3]), default=0)
         self.assertEqual(r, -2)
-        r = oapackage.oahelper.safemin(np.array([]), default=-2)
+        r = oapackage.oahelper.safemin(array([]), default=-2)
         self.assertEqual(r, -2)
-        r = oapackage.oahelper.safemax(np.array([1, -2, 3]), default=0)
+        r = oapackage.oahelper.safemax(array([1, -2, 3]), default=0)
         self.assertEqual(r, 3)
         r = oapackage.oahelper.safemax([], default=-23)
         self.assertEqual(r, -23)
@@ -411,7 +411,7 @@ class TestOAhelper(unittest.TestCase):
         self.assertAlmostEqual(v[0], 0.3747931073686535)
         al = oapackage.exampleArray(9, 0)
         v = oapackage.oahelper.designStandardError(al)
-        np.testing.assert_array_almost_equal(v[1], np.array([0.1679305, 0.17229075, 0.17286095, 0.17287786, 0.17303912,
+        testing.assert_array_almost_equal(v[1], array([0.1679305, 0.17229075, 0.17286095, 0.17287786, 0.17303912,
                                                              0.17353519, 0.17548291]))
 
     def test_fac(self):
@@ -427,28 +427,28 @@ class TestOAhelper(unittest.TestCase):
         self.assertAlmostEqual(b, 0.8944271909999)
 
     def test_array2html(self):
-        X = np.array([[1, 2], [3, 4]], dtype='U200')
+        X = array([[1, 2], [3, 4]], dtype='U200')
         h = oapackage.oahelper.array2html(X, header=1, tablestyle='border-collapse: collapse;',
                                           trclass='', tdstyle='', trstyle='', thstyle='')
         assert('table' in str(h))
 
     def test_sortrows(self):
-        a = np.array([[1, 1], [-2, 2], [-3, 3], [-4, 4], [5, 5]])
+        a = array([[1, 1], [-2, 2], [-3, 3], [-4, 4], [5, 5]])
         s = oapackage.oahelper.sortrows(a)
-        self.assertTrue(np.all(s == [3, 2, 1, 0, 4]))
+        self.assertTrue(all(s == [3, 2, 1, 0, 4]))
 
-        x = -np.array([[0, 0, 1], [0, 1, 0], [0, 1, 1]])
+        x = -array([[0, 0, 1], [0, 1, 0], [0, 1, 1]])
         idx = oapackage.oahelper.sortrows(x)
-        assert(np.all(idx == np.array([2, 1, 0], dtype=np.int64)))
+        assert(all(idx == array([2, 1, 0], dtype=int64)))
 
-        x = np.array([])
+        x = array([])
         idx = oapackage.oahelper.sortrows(x)
         self.assertTrue(len(idx) == 0)
 
     def test_sortcols(self):
-        a = np.array([[1, 1], [-2, 2], [-3, 3], [-4, 4], [5, 5]]).T
+        a = array([[1, 1], [-2, 2], [-3, 3], [-4, 4], [5, 5]]).T
         s = oapackage.oahelper.sortcols(a)
-        self.assertTrue(np.all(s == [3, 2, 1, 0, 4]))
+        self.assertTrue(all(s == [3, 2, 1, 0, 4]))
 
 
 if __name__ == '__main__':

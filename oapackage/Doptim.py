@@ -15,15 +15,16 @@ from typing import Any, Callable, List, Optional, Tuple, Union
 import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
-import numpy as np
-import numpy.typing
+# import numpy as np
+# import numpy.typing
+from numpy import typing, float64, array, ones, zeros, unique, linspace, setdiff1d, intersect1d, asarray, int64, random, lexsort, argsort, minimum, max, vstack
 
 import oalib  # type: ignore
 import oapackage.markup as markup
 import oapackage.oahelper as oahelper
 from oapackage.markup import oneliner as e
 
-FloatArray = np.typing.NDArray[np.float64]
+FloatArray = typing.NDArray[float64]
 
 # %%
 
@@ -82,25 +83,25 @@ def generateDscatter(
     """
     data = dds.T
     pp = oahelper.createPareto(dds)
-    paretoidx = np.array(pp.allindices())
+    paretoidx = array(pp.allindices())
 
     nn = dds.shape[0]
     area = (
         scatterarea
-        * np.ones(
+        * ones(
             nn,
         )
         / 2
     )
-    area[np.array(pp.allindices())] = scatterarea
+    area[array(pp.allindices())] = scatterarea
     alpha = 1.0
 
     if dds.shape[1] > ndata:
         colors = dds[:, ndata]
     else:
-        colors = np.zeros((nn, 1))
+        colors = zeros((nn, 1))
 
-    idx = np.unique(colors).astype(int)
+    idx = unique(colors).astype(int)
 
     if verbose:
         print(f"generateDscatter: unique colors: {idx}")
@@ -111,9 +112,9 @@ def generateDscatter(
         ncolors = max(ncolors, 4)
         mycmap = brewer2mpl.get_map("Set1", "qualitative", ncolors).mpl_colors
     except BaseException:
-        mycmap = [matplotlib.cm.jet(ii) for ii in np.linspace(0, 1, ncolors)]
+        mycmap = [matplotlib.cm.jet(ii) for ii in linspace(0, 1, ncolors)]
 
-    nonparetoidx = np.setdiff1d(range(nn), paretoidx)
+    nonparetoidx = setdiff1d(range(nn), paretoidx)
     if lbls is None:
         lbls = ["%d" % i for i in range(len(idx))]
 
@@ -135,7 +136,7 @@ def generateDscatter(
 
         for jj, ii in enumerate(idx):
             gidx = (colors == ii).nonzero()[0]
-            gp = np.intersect1d(paretoidx, gidx)
+            gp = intersect1d(paretoidx, gidx)
 
             color = mycmap[jj]
             cc = [color] * len(gp)
@@ -338,7 +339,7 @@ def scoreDn(dds: FloatArray, optimfunc: List) -> FloatArray:
     Returns:
         Calculated scores
     """
-    scores = np.array([oalib.scoreD(dd, optimfunc) for dd in dds])
+    scores = array([oalib.scoreD(dd, optimfunc) for dd in dds])
     return scores
 
 
@@ -349,7 +350,7 @@ def calcScore(dds: FloatArray, optimfunc: FloatArray) -> FloatArray:
         dds (array): the rows contains the effieciencies for various designs
         optimfunc (array): aray with the weight factors for the efficiencies
     """
-    scores = np.asarray(dds).dot(np.asarray(optimfunc))
+    scores = asarray(dds).dot(asarray(optimfunc))
 
     return scores
 
@@ -378,7 +379,7 @@ def optimDeffPython(
         s = A0.getarray().max(axis=0) + 1
     else:
         s = arrayclass.factor_levels()
-    sx = tuple(s.astype(np.int64))
+    sx = tuple(s.astype(int64))
     sx = tuple([int(v) for v in sx])
 
     sg = oalib.symmetry_group(sx)
@@ -404,9 +405,9 @@ def optimDeffPython(
     A = A0.clone()
     lc = 0
     for ii in range(0, niter):
-        r = np.random.randint(N)
-        c = np.random.randint(k)
-        r2 = np.random.randint(N)
+        r = random.randint(N)
+        c = random.randint(k)
+        r2 = random.randint(N)
         # make sure c2 is in proper column
         c2 = gstart[gidx[c]] + oalib.fastrand() % gsize[gidx[c]]
 
@@ -476,7 +477,7 @@ def filterPareto(scores, dds, arrays, verbose=0):
         pareto_designs (list) : list of selected designs
     """
     pp = oahelper.createPareto(dds, verbose=0)
-    paretoidx = np.array(pp.allindices())
+    paretoidx = array(pp.allindices())
 
     pareto_scores = scores[paretoidx]
     pareto_efficiencies = dds[paretoidx]
@@ -512,17 +513,17 @@ def selectDn(scores, dds, sols, nout=1, sortfull=True):
         return scores, dds, sols
 
     if sortfull:
-        full_sorting_data = [dds[:, ii] for ii in list(range(dds.shape[1]))[::-1]] + [np.array(scores).flatten()]
-        idx = np.lexsort(full_sorting_data)[::-1]
-        idx = np.lexsort(np.array(full_sorting_data))[::-1]
+        full_sorting_data = [dds[:, ii] for ii in list(range(dds.shape[1]))[::-1]] + [array(scores).flatten()]
+        idx = lexsort(full_sorting_data)[::-1]
+        idx = lexsort(array(full_sorting_data))[::-1]
     else:
-        idx = np.argsort(-scores.flatten())
+        idx = argsort(-scores.flatten())
     scores = scores[idx]
     dds = dds[idx, :]
     sols = [sols[ii] for ii in idx]
     if nout is not None:
         # sort the arrays
-        nout = np.minimum(nout, scores.size)
+        nout = minimum(nout, scores.size)
         scores = scores[0:nout]
         dds = dds[range(nout), :]
         sols = sols[0:nout]
@@ -609,18 +610,18 @@ def Doptimize(
             nabort=nabort,
         )
         dds, sols = rr.dds, rr.designs
-        dds = np.array([x for x in dds])
+        dds = array([x for x in dds])
         # needed because of SWIG wrapping of struct type
         sols = [design.clone() for design in sols]
         nrestarts = rr.nrestarts
-        scores = np.array([oalib.scoreD(A.Defficiencies(), optimfunc) for A in sols])
+        scores = array([oalib.scoreD(A.Defficiencies(), optimfunc) for A in sols])
 
         if verbose >= 3:
-            print(f"Doptimize: max score {np.max(scores):.3f}, max D: {np.max([A.Defficiency() for A in sols]):.6f}")
+            print(f"Doptimize: max score {max(scores):.3f}, max D: {max([A.Defficiency() for A in sols]):.6f}")
     else:
         # assume optimfunc is a function
-        scores = np.zeros((0, 1))
-        dds = np.zeros((0, 3))
+        scores = zeros((0, 1))
+        dds = zeros((0, 3))
         sols = []
 
         nrestarts_requested = nrestarts
@@ -647,8 +648,8 @@ def Doptimize(
                     print("Doptim: max time exceeded, aborting")
                 break
 
-            scores = np.vstack((scores, [score]))
-            dds = np.vstack((dds, dd))
+            scores = vstack((scores, [score]))
+            dds = vstack((dds, dd))
             sols.append(Ax)
             nrestarts = nrestarts + 1
 

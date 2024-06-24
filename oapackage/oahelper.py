@@ -23,8 +23,8 @@ from time import gmtime, strftime
 from typing import Any, List, Optional, Tuple
 
 import dateutil.parser
-import numpy as np
-
+# import numpy as np
+from numpy import prod, floor, abs, array, zeros, sqrt, float64, around, mod, argsort, linalg, ndarray
 try:
     import matplotlib
     import matplotlib.pyplot as plt
@@ -127,9 +127,9 @@ def tilefigs(lst, geometry, ww=None, raisewindows=False, tofront=False, verbose=
         if not plt.fignum_exists(f):
             continue
         fig = plt.figure(f)
-        iim = ii % np.prod(geometry)
+        iim = ii % prod(geometry)
         ix = iim % geometry[0]
-        iy = np.floor(float(iim) / geometry[0])
+        iy = floor(float(iim) / geometry[0])
         x = ww[0] + ix * w
         y = ww[1] + iy * h
         if verbose:
@@ -166,13 +166,13 @@ def tilefigs(lst, geometry, ww=None, raisewindows=False, tofront=False, verbose=
 
 def plot2Dline(line, *args, **kwargs):
     """Plot a 2D line in a matplotlib figure"""
-    if np.abs(line[1]) > 0.001:
+    if abs(line[1]) > 0.001:
         xx = plt.xlim()
-        xx = np.array(xx)
+        xx = array(xx)
         yy = (-line[2] - line[0] * xx) / line[1]
         plt.plot(xx, yy, *args, **kwargs)
     else:
-        yy = np.array(plt.ylim())
+        yy = array(plt.ylim())
         xx = (-line[2] - line[1] * yy) / line[0]
         plt.plot(xx, yy, *args, **kwargs)
 
@@ -221,10 +221,10 @@ def niceplot(
         # Remove the line around the legend box, and instead fill it with a light grey
         # Also only use one point for the scatterplot legend because the user will
         # get the idea after just one, they don't need three.
-        light_grey = np.array([float(241) / float(255)] * 3)
+        light_grey = array([float(241) / float(255)] * 3)
         rect = legend.get_frame()
         rect.set_facecolor(light_grey)
-        middle_grey = np.array([float(151) / float(255)] * 3)
+        middle_grey = array([float(151) / float(255)] * 3)
         rect.set_edgecolor(middle_grey)
         # rect.set_linewidth(0.0)
 
@@ -275,8 +275,8 @@ def helmert_contrasts(number_of_levels, verbose=0):
     meoffset = 0
     md = number_of_levels - 1
 
-    main_effects = np.zeros((number_of_levels, md))
-    Z = np.zeros((number_of_levels, md + 1))
+    main_effects = zeros((number_of_levels, md))
+    Z = zeros((number_of_levels, md + 1))
 
     for value in range(number_of_levels):
         for ii in range(0, md + 1):
@@ -303,7 +303,7 @@ def helmert_contrasts(number_of_levels, verbose=0):
         if verbose:
             print(f"helmert_contrasts: normalize number_of_levels tmp: {normalization} ")
         main_effects[:, meoffset + ii : (meoffset + ii + 1)] = (
-            np.sqrt(N) * Z[:, (ii + 1) : (ii + 2)] / np.sqrt(normalization)
+            sqrt(N) * Z[:, (ii + 1) : (ii + 2)] / sqrt(normalization)
         )
 
     return main_effects
@@ -319,7 +319,7 @@ def selectParetoArrays(array_list, pareto_object):
         list: list with all Pareto optimal designs
     """
     paretoarrays = oalib.arraylist_t()
-    paretoidx = np.array(pareto_object.allindices())
+    paretoidx = array(pareto_object.allindices())
     ww = oalib.longVector(tuple(paretoidx.tolist()))
     oalib.selectArrays(array_list, ww, paretoarrays)
     return paretoarrays
@@ -339,7 +339,7 @@ def createPareto(dds, verbose=1):
     pp = oapackage.ParetoDoubleLong()
 
     for ii in range(dds.shape[0]):
-        v = (dds[ii, :]).astype(np.float64)
+        v = (dds[ii, :]).astype(float64)
         pp.addvalue(v, ii)
 
     if verbose:
@@ -996,10 +996,10 @@ def gwlp2str(gmadata, t=None, sformat=None, jstr=","):
             pass
         else:
             gmadata[gmadata < 0] = 0
-        if not (np.abs(gmadata[0] - 1) < 1e-12 and np.abs(gmadata[1]) < 1e-12):
+        if not (abs(gmadata[0] - 1) < 1e-12 and abs(gmadata[1]) < 1e-12):
             warnings.warn("data does not represent GWPL data", UserWarning)
             return ""
-    bgma = np.around(gmadata, decimals=12)
+    bgma = around(gmadata, decimals=12)
     if t is not None:
         bgma = bgma[(t + 1) :]
     if sformat is None:
@@ -1150,7 +1150,7 @@ def argsort(seq):
 @deprecated
 def jseq(xx, comb):
     pp = functools.reduce(lambda y, i: xx[:, i] + y, comb, 0)
-    jseq = 1 - 2 * np.mod(pp, 2)
+    jseq = 1 - 2 * mod(pp, 2)
     return jseq
 
 
@@ -1166,17 +1166,17 @@ def sortrows(x):
     """
     if len(x.shape) == 1:
         nn = 1
-        sind = np.argsort(x)
+        sind = argsort(x)
         return sind
     else:
         nn = x.shape[1]
     dt = [("x%d" % xx, "f8") for xx in range(0, nn)]
     if x.size == 0:
-        sind = np.array([])
+        sind = array([])
         return sind
     v = [tuple(x[kk, :]) for kk in range(0, x.shape[0])]
-    w = np.array(v, dtype=dt)
-    sind = np.argsort(w)
+    w = array(v, dtype=dt)
+    sind = argsort(w)
     return sind
 
 
@@ -1224,20 +1224,20 @@ def designStandardError(al) -> Tuple[float, float, float]:
 
     """
 
-    X = np.array(al.getModelMatrix(2))
+    X = array(al.getModelMatrix(2))
     k = al.n_columns
 
     scalefac = 1
-    M = np.linalg.inv(X.transpose().dot(X) / scalefac)
+    M = linalg.inv(X.transpose().dot(X) / scalefac)
 
-    mm = np.array(M.diagonal()).flatten()
+    mm = array(M.diagonal()).flatten()
 
     m1 = mm[1 : (1 + k)].flatten()
-    m1 = m1[np.argsort(m1)]
+    m1 = m1[argsort(m1)]
     m2 = mm[(1 + k) :]
-    m2 = m2[np.argsort(m2)]
+    m2 = m2[argsort(m2)]
     m0 = mm[0]
-    return np.sqrt(m0), np.sqrt(m1), np.sqrt(m2)
+    return sqrt(m0), sqrt(m1), sqrt(m2)
 
 
 # %%
@@ -1295,7 +1295,7 @@ def makearraylink(array):
     Returns:
         array_link
     """
-    if isinstance(array, np.ndarray):
+    if isinstance(array, ndarray):
         array = oapackage.create_array_link(array)
     return array
 
@@ -1309,7 +1309,7 @@ def formatC(al, wrap: bool = True) -> str:
     Returns:
         Formatted string
     """
-    A = np.array(al).T.flatten().tolist()
+    A = array(al).T.flatten().tolist()
     s = ",".join(["%d" % x for x in A])
     if wrap:
         s = "\tarray_link array ( %d,%d, 0 );\n\tint array_data_tmp[] = {" % (al.n_rows, al.n_columns) + s + "};"
@@ -1354,7 +1354,7 @@ def create_pareto_element(values, pareto=None):
             vec = oalib.mvalue_t_double(list(v))
             vector_pareto.push_back(vec)
     elif isinstance(pareto, oalib.ParetoDoubleLong):
-        if not isinstance(values, (list, tuple, np.ndarray)):
+        if not isinstance(values, (list, tuple, ndarray)):
             raise Exception(f"cannot handle input of type {tuple(values)}")
         vector_pareto = values
     else:

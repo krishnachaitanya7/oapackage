@@ -6,8 +6,8 @@
 # %% Load packages
 from typing import Any, List, Tuple
 
-import numpy as np
-
+# import numpy as np
+from numpy import array, cumsum, hstack, ones, zeros, vstack, unique
 import oapackage
 
 # %%
@@ -35,18 +35,18 @@ def oa2graph(al, adata, verbose=1):
     nColVertices = ncols
     colOffset = adata.N
 
-    s = np.array(adata.factor_levels())
-    sc = np.cumsum(s)
-    sc0 = np.hstack(([0], sc))
-    qq = np.ones(nColumnLevelVertices)  # colors for column level vertices
+    s = array(adata.factor_levels())
+    sc = cumsum(s)
+    sc0 = hstack(([0], sc))
+    qq = ones(nColumnLevelVertices)  # colors for column level vertices
     for ii in range(sc.size):
         qq[sc0[ii] : sc0[ii + 1]] = 2 + ii
-    qq = 2 * np.ones(nColumnLevelVertices)  # colors for column level vertices
+    qq = 2 * ones(nColumnLevelVertices)  # colors for column level vertices
 
-    vertexOffsets = adata.N + ncols + np.hstack((0, s[0:-1])).cumsum()
-    colors = np.hstack((np.zeros(adata.N), np.ones(ncols), qq))
+    vertexOffsets = adata.N + ncols + hstack((0, s[0:-1])).cumsum()
+    colors = hstack((zeros(adata.N), ones(ncols), qq))
 
-    im = np.zeros((nVertices, nVertices))  # incidence matrix
+    im = zeros((nVertices, nVertices))  # incidence matrix
 
     for row in range(0, nrows):
         idx = A[row, :] + vertexOffsets
@@ -96,18 +96,18 @@ def selectIsomorphismClasses(sols, verbose: int = 1) -> Tuple[List[int], List[An
         tt = oapackage.reduceOAnauty(al, verbose >= 2)
 
         alx = tt.apply(al)
-        mm.append(np.array(alx))
+        mm.append(array(alx))
 
     # perform uniqueness check
     nn = len(mm)
-    qq = np.array([None] * nn, dtype=object)
+    qq = array([None] * nn, dtype=object)
     for ii in range(nn):
         qq[ii] = mm[ii].flatten()
 
     # Trick to make unique work...
-    _, indices = np.unique(np.vstack(qq), axis=0, return_inverse=True)
+    _, indices = unique(vstack(qq), axis=0, return_inverse=True)
 
     if verbose >= 1:
-        print("selectIsomorphismClasses: reduce %d to %d" % (len(sols), np.unique(indices).size))
+        print("selectIsomorphismClasses: reduce %d to %d" % (len(sols), unique(indices).size))
 
     return indices, mm

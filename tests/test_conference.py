@@ -7,8 +7,8 @@ Pieter Eendebak <pieter.eendebak@gmail.com>
 # %%
 import sys
 import unittest
-import numpy as np
-
+# import numpy as np
+from numpy import testing, array, histogram, abs, arange, testing
 import oapackage
 import oapackage.conference
 
@@ -37,7 +37,7 @@ def only_python3(function):
 
 
 def _statistics_equal(statistics, expected):
-    np.testing.assert_array_almost_equal(np.array(statistics), np.array(expected))
+    testing.assert_array_almost_equal(array(statistics), array(expected))
 
 
 class TestFvalues(unittest.TestCase):
@@ -65,18 +65,18 @@ class TestJcharacteristics(unittest.TestCase):
 
         JJ = oapackage.Jcharacteristics_conference(array, 4)
         self.assertEqual(len(JJ), oapackage.choose(array.n_columns, 4))
-        hist = np.histogram(np.abs(JJ), bins=np.arange(0, 21, 2))[0]
+        hist = histogram(abs(JJ), bins=arange(0, 21, 2))[0]
         self.assertEqual(list(hist), [9, 0, 52, 0, 8, 0, 1, 0, 0, 0])
 
 
 class TestConferenceStatistics(unittest.TestCase):
 
     def test_momentMatrix(self):
-        M1 = np.array([[1., 0., 1. / 3],
+        M1 = array([[1., 0., 1. / 3],
                        [0., 1. / 3, 0.],
                        [1. / 3, 0., 0.2]])
         M = oapackage.conference.momentMatrix(1)
-        np.testing.assert_array_equal(M, M1)
+        testing.assert_array_equal(M, M1)
         M = oapackage.conference.momentMatrix(4)
         self.assertEqual(M.shape, (15, 15))
 
@@ -107,10 +107,10 @@ class TestConferenceStatistics(unittest.TestCase):
         _statistics_equal(statistics, expected)
 
     def test_leftDivide(self):
-        A = np.array([[1, 2], [3, 4]])
-        B = np.array([[51, -2], [3, 4]])
+        A = array([[1, 2], [3, 4]])
+        B = array([[51, -2], [3, 4]])
         C = oapackage.conference._leftDivide(A, B)
-        np.testing.assert_array_almost_equal(C, np.array([[-99., 8.], [75., -5.]]))
+        testing.assert_array_almost_equal(C, array([[-99., 8.], [75., -5.]]))
 
 
 if __name__ == '__main__':

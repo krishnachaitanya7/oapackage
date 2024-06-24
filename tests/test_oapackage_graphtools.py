@@ -3,8 +3,8 @@
 
 import unittest
 
-import numpy as np
-
+# import numpy as np
+from numpy import all
 import oapackage
 import oapackage.graphtools
 import oapackage.scanf
@@ -18,7 +18,7 @@ class TestGraphtools(unittest.TestCase):
         indices, mm = oapackage.graphtools.selectIsomorphismClasses(ll, verbose=0)
         assert(indices[0] == indices[1])
         self.assertEqual(len(mm), 2)
-        assert(np.all(mm[0] == mm[1]))
+        assert(all(mm[0] == mm[1]))
 
 
 if __name__ == '__main__':

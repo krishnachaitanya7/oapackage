@@ -9,7 +9,8 @@ Log with:
 #%% Load necessary packages
 import sys
 import os
-import numpy as np
+# import numpy as np
+from numpy import abs, array
 import time
 import subprocess
 import getopt
@@ -77,8 +78,8 @@ def pytest3(verbose=2):
     N = 40
     lll = oahelper.runExtend(N, k, strength, 2, verbose=0)
 
-    rnk0 = np.array([19, 19, 21, 21, 19, 22, 22, 22, 22])  # ground-truth
-    D0 = np.array([0.0, 0.0, 0.0, 0.1703475035645109, 0.0, 0.8107439985672059, 0.8969911485707478, 0.8953919248315042, 0.9007069559712273])  # gt
+    rnk0 = array([19, 19, 21, 21, 19, 22, 22, 22, 22])  # ground-truth
+    D0 = array([0.0, 0.0, 0.0, 0.1703475035645109, 0.0, 0.8107439985672059, 0.8969911485707478, 0.8953919248315042, 0.9007069559712273])  # gt
 
     rnk = [oalib.array2xf(al).rank() for al in lll]
     D = [al.Defficiency() for al in lll]
@@ -87,7 +88,7 @@ def pytest3(verbose=2):
         if verbose:
             print('  rank test FAILED!')
             return False
-    if not (np.abs(D0 - D) < 1e-6).all():
+    if not (abs(D0 - D) < 1e-6).all():
         if verbose:
             print('  Defficiency test FAILED!')
         return False
