@@ -1,0 +1,9 @@
+numpy
+matplotlib
+iPython
+
+sphinx
+sphinxcontrib.bibtex
+nbsphinx
+sphinxcontrib.napoleon
+breathe
