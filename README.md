@@ -1,4 +1,4 @@
-Orthogonal Array Package
+Orthogonal Array Package (NOT OFFICIAL, MODIFIED FOR MY NEEDS)
 ========================
 
 The Orthogonal Array package contains functionality to generate and analyse orthogonal arrays, optimal designs and conference designs.
